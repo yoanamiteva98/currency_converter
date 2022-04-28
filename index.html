@@ -1,0 +1,113 @@
+<html>
+<head>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+</head>
+<body>
+ <select class="dropdown-content" name="currencies" id="currencies">
+  <option value="usd">USD</option>
+  <option value="eur">EUR</option>
+  <option value="aud">AUD</option>
+  <option value="cad">CAD</option>
+  <option value="chf">CHF</option>
+  <option value="nzd">NZD</option>
+  <option value="bgn">BGN</option>
+</select>
+
+  <button type="submit" class="btn-submit" id="exchange">Get Change Rates</button>
+  <div class="output" id="output">
+  </div>
+</body>
+<style>
+
+.dropdown-content {
+  position: absolute;
+  background-color: #f1f1f1;
+  min-width: 160px;
+  height: 30px;
+  box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+  z-index: 1;
+}
+.btn-submit {
+background-color: #04AA6D;
+    color: white;
+    padding: 8px;
+    font-size: 13px;
+    border: none;
+    display: inline-block;
+    margin-left: 180px;
+}
+.btn-submit:hover{
+  background-color: #3e8e41;
+}
+.output{
+  margin-top: 20px;
+}
+</style>
+<script>
+$( document ).ready(function(){
+
+  const btn = document.getElementById("exchange");
+  btn.addEventListener("click", function () {
+   
+  let mainApiUrl =
+    "https://cdn.jsdelivr.net/gh/fawazahmed0/currency-api@1/latest/currencies/";
+  let currencies = document.getElementById("currencies");
+  let currency = currencies.options[currencies.selectedIndex].value;
+  
+  
+  let fullApiUrl = mainApiUrl + currency + ".json";
+  let outputContent = 'Currency: ' + currency.toUpperCase() + '<br><br>';
+  loadRatesJson(fullApiUrl, currency, outputContent);
+  });
+
+function loadRatesJson(fullApiUrl, currency, outputContent){
+    fetch(fullApiUrl)
+  .then(res => res.json())
+  .then((output) => {
+    let dataOutput = output;
+    let arr = ["usd", "eur", "aud", "cad", "chf", "nzd", "bgn"];
+    let group1 = '';
+      //let arr1 = Array.from(Array(2), () => new Array(2));
+    let counter1 = 0;
+    let group2='';
+    let counter2 = 0;
+    let group3='';
+    let counter3 = 0;
+    for(let i = 0; i < arr.length; i++){  
+     for(let j=0; j< arr.length - i - 1; j++){  
+      if(dataOutput[currency][arr[j]] > dataOutput[currency][arr[j+1]]){
+         [arr[j + 1],arr[j]] = [arr[j],arr[j + 1]]
+      } 
+     }
+    }
+      console.log(arr);
+    for(let i=0; i<= arr.length-1; i++){  
+     if(currency != arr[i]){
+       
+      if(dataOutput[currency][arr[i]]<1){
+        
+         group1 = group1 + currency.toUpperCase() + '-' + arr[i].toUpperCase() + ': ' + dataOutput[currency][arr[i]] + '<br>';
+        //arr1[counter1][0] = arr[i];
+       // arr1[counter1][1] = dataOutput[currency][arr[i]];
+        counter1++;
+       }
+       else if(dataOutput[currency][arr[i]]<1.5 && dataOutput[currency][arr[i]]>=1){
+         group2 = group2 + currency.toUpperCase() + '-' + arr[i].toUpperCase() + ': ' + dataOutput[currency][arr[i]] + '<br>';
+         counter2++;
+       }
+       else{
+         group3 = group3 + currency.toUpperCase() + '-' + arr[i].toUpperCase() + ': ' + dataOutput[currency][arr[i]] + '<br>';
+         counter3++;
+       }
+     }
+     }
+      //console.log(arr1);
+      outputContent = outputContent + 'Group 1<br>' + group1 +'Count:' + counter1 + '<br><br>Group 2<br>' + group2 +'Count:' + counter2 + '<br><br>Group 3<br>' + group3 +'Count:' + counter3 ;
+
+      document.getElementById("output").innerHTML = outputContent;
+  })
+  .catch(err => { throw err });
+}
+});
+</script>
+</html>
